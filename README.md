@@ -100,7 +100,6 @@ func (o *cat) After() error {
 }
 
 func (o *cat) Run() error {
-	// not checked the range
 	p := o.Parent.Get()
 	verbose := p.Verbose.Get()
 	silent := p.Silent.Get()
