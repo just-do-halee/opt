@@ -1,29 +1,15 @@
-<div align="center">
-  <img src="./.github/logo.png" alt="go-arg" height="170px">
-  <h1>OPT</h1>
-  <p>Opt is a package for building an organized CLI app in Go.</p>
-  <br/>
-</div>
+package cli
 
-```shell
-go get -u github.com/just-do-halee/opt@latest
-```
+import (
+	"bufio"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 
-[![CI][ci-badge]][ci-url]
-[![Go Reference](https://pkg.go.dev/badge/github.com/just-do-halee/opt.svg)](https://pkg.go.dev/github.com/just-do-halee/opt)
-[![Licensed][license-badge]][license-url]
-[![Twitter][twitter-badge]][twitter-url]
+	"github.com/just-do-halee/opt"
+)
 
-[ci-badge]: https://github.com/just-do-halee/opt/actions/workflows/ci.yml/badge.svg
-[license-badge]: https://img.shields.io/github/license/just-do-halee/opt?color=blue
-[twitter-badge]: https://img.shields.io/twitter/follow/do_halee?style=flat&logo=twitter&color=4a4646&labelColor=333131&label=just-do-halee
-[ci-url]: https://github.com/just-do-halee/opt/actions
-[twitter-url]: https://twitter.com/do_halee
-[license-url]: https://github.com/just-do-halee/opt
-
-| [Examples](./examples/) | [Latest Note](./CHANGELOG.md) |
-
-```go
 type file string
 
 type Textify struct {
@@ -79,7 +65,6 @@ func (o *Textify) Run() error {
 }
 
 // ----------------------------------------------
-
 type cat struct {
 	Parent opt.Parent[Textify]
 	File   opt.Argument[file] `msg:"File to print"`
@@ -96,6 +81,7 @@ func (o *cat) After() error {
 }
 
 func (o *cat) Run() error {
+	// not checked the range
 	verbose := o.Parent.Get().Verbose.Get()
 
 	println := func(a ...any) {
@@ -126,19 +112,3 @@ func (o *cat) Run() error {
 	println(">---------End of contents----------<")
 	return nil
 }
-```
-
-```go
-func main() {
-	err :=
-		opt.Args().
-			Version("v0.1.0").
-			Author("just-do-halee <just.do.halee@gmail.com>").
-			About("This is a CLI app program.").
-			Build(new(Textify))
-
-	if err != nil {
-		fmt.Print(err)
-	}
-}
-```

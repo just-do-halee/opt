@@ -1,16 +1,7 @@
 package opt
 
-type Help[T any] struct {
-	opt     T
-	message string
-}
+type Help bool
 
-func (h Help[T]) String() string {
-	return h.message
-}
-
-func (h *Help[T]) Parse() error {
-	// a := new(T)
-	// h.message =
+func (*Help) Run() error {
 	return nil
 }
