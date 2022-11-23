@@ -188,7 +188,7 @@ func MatchAndSetField(structPtr any, tree *Tree, args *[]string) (nextStruct any
 		} else {
 
 			if len(arguments) == 0 {
-				s := fmt.Sprint("\n  unexpected \"", argName, "\"\n\n  Use '", tree.Footer(), "' for more information\n")
+				s := fmt.Sprint("\n  unexpected argument \"", argName, "\"\n\n  Use '", tree.Footer(), "' for more information\n")
 				err = errors.New(fmt.Sprint(s))
 				return
 			}
