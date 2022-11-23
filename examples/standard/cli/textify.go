@@ -16,6 +16,7 @@ type Textify struct {
 	Input   opt.Argument[file] `msg:"Input path"`
 	Output  opt.Option[file]   `msg:"Output path" opt:"s,l"`
 	Verbose opt.Option[int]    `msg:"Verbosity level -vv.." opt:"s,l,o"`
+	Silent  opt.Option[bool]   `msg:"Silent mode" opt:"s,l"`
 	Cat     opt.Command[cat]   `msg:"Print file contents"`
 
 	Help        opt.Option[opt.Help]  `opt:"l,s"`
@@ -25,6 +26,7 @@ type Textify struct {
 func (o *Textify) Before() error {
 	opt.Set(&o.Output, file("./output.txt"))
 	opt.Set(&o.Verbose, 2)
+	opt.Set(&o.Silent, false)
 	return nil
 }
 
@@ -48,7 +50,9 @@ func (o *Textify) Run() error {
 	output := o.Output.Get()
 
 	verbose := o.Verbose.Get()
-	if verbose > 0 {
+	silent := o.Silent.Get()
+
+	if verbose > 0 && !silent {
 		log.Println("Copying file:", input, "to", output)
 	}
 
@@ -82,10 +86,12 @@ func (o *cat) After() error {
 
 func (o *cat) Run() error {
 	// not checked the range
-	verbose := o.Parent.Get().Verbose.Get()
+	p := o.Parent.Get()
+	verbose := p.Verbose.Get()
+	silent := p.Silent.Get()
 
 	println := func(a ...any) {
-		if verbose > 0 {
+		if verbose > 0 && !silent {
 			log.Println(a...)
 		}
 	}

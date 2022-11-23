@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/goccy/go-reflect"
 	"github.com/just-do-halee/refl"
@@ -44,13 +45,16 @@ func MatchAndSetField(structPtr any, tree *Tree, args *[]string) (nextStruct any
 
 	// match and set the field
 	for i := 0; i < argsLen; i++ {
-		arg := (*args)[i]
+
+		// arg = full string name
+		arg, argValue, valuedOk := strings.Cut((*args)[i], "=")
 		if arg == "" {
 			continue
 		}
 
+		// argName = pure name (cutted if it's a short name)
 		argName := arg
-		_, count, e := countShortFlagOccurency(arg)
+		_, count, e := countShortFlagOccurency(argName)
 		if e == nil {
 			// if the arg is a short flag, cut the flag name
 			argName = arg[:2]
@@ -58,22 +62,33 @@ func MatchAndSetField(structPtr any, tree *Tree, args *[]string) (nextStruct any
 
 		// option
 		if option := tree.Options[argName]; option != nil {
-			if option.IsInnerTypeHelp() {
-				err = errors.New(tree.ToHelp())
-				return
+
+			// -... pure occurrences
+			if count > 1 {
+				if !option.Opt.occurrency {
+					s := fmt.Sprint("\n  invalid occurrences: ", argName, "...\n\n  ", option.Usage, "\n")
+					err = errors.New(s)
+					return
+				}
+				if valuedOk {
+					s := fmt.Sprint("\n  invalid value in short occurrences: ", argValue, "\ttry ", arg, "\n\n  ", option.Usage, "\n")
+					err = errors.New(s)
+					return
+				}
+			}
+
+			countStr := strconv.Itoa(count)
+
+			// single short with the value
+			if count == 1 && valuedOk {
+				countStr = argValue
 			}
 
 			// short
-			if count > 1 && !option.Opt.occurrency {
-				s := fmt.Sprint("\n  invalid occurrences: ", argName, "...\n\n  ", option.Usage, "\n")
-				err = errors.New(s)
-				return
-			}
-			if count > 1 && option.Opt.occurrency {
-				// short flag with occurrency
-				// e.g. -vvv
+			if count > 0 {
+				// e.g. -v..
 				// set the value to the field
-				err = parsedSet(option, strconv.Itoa(count))
+				err = parsedSet(option, countStr)
 				if err != nil {
 					return
 				}
@@ -83,26 +98,71 @@ func MatchAndSetField(structPtr any, tree *Tree, args *[]string) (nextStruct any
 				continue
 			}
 
+			// long with occurrences
+			if option.Opt.occurrency && !valuedOk {
+				// e.g. --verbose
+				// set the value to the field
+				err = parsedSet(option, "1")
+				if err != nil {
+					return
+				}
+
+				// remove the field from the required list
+				delete(tree.Required, option)
+				continue
+			}
+
+			if option.IsInnerTypeHelp() && !valuedOk {
+				err = errors.New(tree.ToHelp())
+				return
+			}
+
 			if option.InnerType.Kind() == kind.Bool {
-				option.Field.Value.SetBool(true)
+
+				value := "1"
+
+				if valuedOk {
+					_, err = strconv.ParseBool(argValue)
+					if err != nil {
+						s := fmt.Sprint("\n  invalid value: ", argValue, "\ttry ", arg, "\n\n  ", option.Usage, "\n")
+						err = errors.New(s)
+						return
+					}
+					value = argValue
+				}
+
+				err = parsedSet(option, value)
+				if err != nil {
+					return
+				}
+
 				delete(tree.Required, option)
 				continue
 			}
 
 			// normal set
-			if i+1 < len(*args) {
-				err = parsedSet(option, (*args)[i+1])
+			if valuedOk {
+				err = parsedSet(option, argValue)
 				if err != nil {
 					s := fmt.Sprint("\n  ", err.Error(), "\n\n  ", option.Usage, "\n")
 					err = errors.New(s)
 					return
 				}
-				// increment i to skip the value
-				i++
 			} else {
-				s := fmt.Sprint("\n  missing value for ", argName, "\n\n  ", option.Usage, "\n")
-				err = errors.New(s)
-				return
+				if i+1 < len(*args) {
+					err = parsedSet(option, (*args)[i+1])
+					if err != nil {
+						s := fmt.Sprint("\n  ", err.Error(), "\n\n  ", option.Usage, "\n")
+						err = errors.New(s)
+						return
+					}
+					// increment i to skip the value
+					i++
+				} else {
+					s := fmt.Sprint("\n  missing value for ", argName, "\n\n  ", option.Usage, "\n")
+					err = errors.New(s)
+					return
+				}
 			}
 
 			// remove the field from the required list
