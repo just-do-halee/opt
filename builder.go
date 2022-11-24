@@ -5,9 +5,8 @@ import (
 )
 
 type builder struct {
-	options    internal.BuilderOptions
-	args       []string
-	earlyError error
+	options internal.BuilderOptions
+	args    []string
 }
 
 func (b *builder) Author(author string) *builder {
@@ -25,12 +24,7 @@ func (b *builder) About(about string) *builder {
 	return b
 }
 
-//go:inline
 func (b *builder) Build(opt any) error {
-	if b.earlyError != nil {
-		return b.earlyError
-	}
-
 	_, err := internal.Parse(opt, b.args, b.options)
 	return err
 }

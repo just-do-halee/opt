@@ -15,10 +15,6 @@ type UnsafeSetter interface {
 	UnsafeSet(value any)
 }
 
-type PointerGetter interface {
-	GetPtr() any
-}
-
 //go:inline
 func MatchAndSetField(structPtr any, tree *Tree, args *[]string) (nextStruct any, err error) {
 	argsLen := len(*args)
