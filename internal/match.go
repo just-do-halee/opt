@@ -98,17 +98,9 @@ func MatchAndSetField(structPtr any, tree *Tree, args *[]string) (nextStruct any
 					err = errors.New(s)
 					return
 				}
-			}
 
-			countStr := strconv.Itoa(count)
+				countStr := strconv.Itoa(count)
 
-			// single short with the value
-			if count == 1 && valuedOk {
-				countStr = argValue
-			}
-
-			// short
-			if count > 0 {
 				// e.g. -v..
 				// set the value to the field
 				err = parsedSet(option, countStr)
