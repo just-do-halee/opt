@@ -28,3 +28,10 @@ func (b *builder) Build(opt any) error {
 	_, err := internal.Parse(opt, b.args, b.options)
 	return err
 }
+
+type Tree = *internal.Tree
+
+func (b *builder) BuildForDebugging(opt any) (error, Tree) {
+	tree, err := internal.Parse(opt, b.args, b.options)
+	return err, tree
+}
