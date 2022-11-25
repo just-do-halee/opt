@@ -142,6 +142,7 @@ func TestE2E(t *testing.T) {
 			default:
 				opt.Set(&op.Input, "./test.txt")
 				opt.Set(&op.Output, "./test.txt")
+				opt.Set(&op.Verbose, 3)
 			}
 
 			err, tree := opt.Args(a.args...).BuildForDebugging(&op)
