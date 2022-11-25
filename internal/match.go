@@ -322,7 +322,7 @@ func countShortFlagOccurency(arg string) (first rune, count int, err error) {
 		err = errors.New("empty string")
 		return
 	}
-	if arg[0] != '-' {
+	if len(arg) < 2 || arg[0] != '-' {
 		err = errors.New("not a flag")
 		return
 	}
