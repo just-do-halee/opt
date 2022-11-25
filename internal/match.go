@@ -58,6 +58,33 @@ func MatchAndSetField(structPtr any, tree *Tree, args *[]string) (nextStruct any
 
 		// option
 		if option := tree.Options[argName]; option != nil {
+			if option.IsInnerTypeHelp() && !valuedOk {
+				err = errors.New(tree.ToHelp())
+				return
+			}
+
+			if option.InnerType.Kind() == kind.Bool {
+
+				value := "1"
+
+				if valuedOk {
+					_, err = strconv.ParseBool(argValue)
+					if err != nil {
+						s := fmt.Sprint("\n  invalid value: ", argValue, "\ttry ", arg, "\n\n  ", option.Usage, "\n")
+						err = errors.New(s)
+						return
+					}
+					value = argValue
+				}
+
+				err = parsedSet(option, value)
+				if err != nil {
+					return
+				}
+
+				delete(tree.Required, option)
+				continue
+			}
 
 			// -... pure occurrences
 			if count > 1 {
@@ -104,34 +131,6 @@ func MatchAndSetField(structPtr any, tree *Tree, args *[]string) (nextStruct any
 				}
 
 				// remove the field from the required list
-				delete(tree.Required, option)
-				continue
-			}
-
-			if option.IsInnerTypeHelp() && !valuedOk {
-				err = errors.New(tree.ToHelp())
-				return
-			}
-
-			if option.InnerType.Kind() == kind.Bool {
-
-				value := "1"
-
-				if valuedOk {
-					_, err = strconv.ParseBool(argValue)
-					if err != nil {
-						s := fmt.Sprint("\n  invalid value: ", argValue, "\ttry ", arg, "\n\n  ", option.Usage, "\n")
-						err = errors.New(s)
-						return
-					}
-					value = argValue
-				}
-
-				err = parsedSet(option, value)
-				if err != nil {
-					return
-				}
-
 				delete(tree.Required, option)
 				continue
 			}
