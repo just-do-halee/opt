@@ -140,9 +140,9 @@ func TestE2E(t *testing.T) {
 			// set defaults
 			switch a.info.caseId {
 			default:
-				opt.Set(&op.Input, "./test.txt")
-				opt.Set(&op.Output, "./test.txt")
-				opt.Set(&op.Verbose, 3)
+				op.Input.Set("./test.txt")
+				op.Output.Set("./test.txt")
+				op.Verbose.Set(3)
 			}
 
 			err, tree := opt.Args(a.args...).BuildForDebugging(&op)

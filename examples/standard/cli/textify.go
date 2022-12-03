@@ -24,20 +24,20 @@ type Textify struct {
 }
 
 func (o *Textify) Before() error {
-	opt.Set(&o.Output, file("./output.txt"))
-	opt.Set(&o.Verbose, 2)
-	opt.Set(&o.Silent, false)
+	o.Output.Set("./output.txt")
+	o.Verbose.Set(2)
+	o.Silent.Set(false)
 	return nil
 }
 
 func (o *Textify) After() error {
 	var err error
 
-	err = opt.Validate(&o.Input, opt.IsFile[file])
+	err = o.Input.Validate(opt.IsFile[file])
 	if err != nil {
 		return err
 	}
-	err = opt.Validate(&o.Verbose, opt.IsMinMax(0, 3))
+	err = o.Verbose.Validate(opt.IsMinMax(0, 3))
 	if err != nil {
 		return err
 	}
@@ -76,12 +76,12 @@ type cat struct {
 }
 
 func (o *cat) Before() error {
-	opt.Set(&o.Len, uint(10))
+	o.Len.Set(10)
 	return nil
 }
 
 func (o *cat) After() error {
-	return opt.Validate(&o.File, opt.IsFile[file])
+	return o.File.Validate(opt.IsFile[file])
 }
 
 func (o *cat) Run() error {
